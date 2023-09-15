@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/product")
 public class AdminController {
 
     @Autowired
@@ -47,5 +47,9 @@ public class AdminController {
         else {
            return ResponseEntity.notFound().build();
         }
+    }
+    @GetMapping("/test")
+    public String test(){
+        return "work";
     }
 }

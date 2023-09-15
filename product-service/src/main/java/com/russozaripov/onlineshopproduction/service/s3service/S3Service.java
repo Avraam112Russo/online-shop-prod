@@ -1,8 +1,5 @@
 package com.russozaripov.onlineshopproduction.service.s3service;
 
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,19 +15,20 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class S3Service {
 
-    private static final String BUCKET_NAME = "bucket-russiano";
-    private final AmazonS3Client amazonS3Client;
-
+//    private static final String BUCKET_NAME = "bucket-russiano";
+//    private final AmazonS3Client amazonS3Client;
+//
     public String add_New_File(MultipartFile file) throws IOException {
-    String fileExtension = StringUtils.getFilenameExtension(file.getOriginalFilename());
-    String fileName = UUID.randomUUID().toString() + "." + fileExtension;
-
-        ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentLength(file.getSize());
-        objectMetadata.setContentType(file.getContentType());
-
-        amazonS3Client.putObject(BUCKET_NAME, fileName, file.getInputStream(), objectMetadata);
-        amazonS3Client.setObjectAcl(BUCKET_NAME, fileName, CannedAccessControlList.PublicRead);
-       return amazonS3Client.getResourceUrl(BUCKET_NAME, fileName);
+//    String fileExtension = StringUtils.getFilenameExtension(file.getOriginalFilename());
+//    String fileName = UUID.randomUUID().toString() + "." + fileExtension;
+//
+//        ObjectMetadata objectMetadata = new ObjectMetadata();
+//        objectMetadata.setContentLength(file.getSize());
+//        objectMetadata.setContentType(file.getContentType());
+//
+//        amazonS3Client.putObject(BUCKET_NAME, fileName, file.getInputStream(), objectMetadata);
+//        amazonS3Client.setObjectAcl(BUCKET_NAME, fileName, CannedAccessControlList.PublicRead);
+//       return amazonS3Client.getResourceUrl(BUCKET_NAME, fileName);
+    return "some url";
     }
 }

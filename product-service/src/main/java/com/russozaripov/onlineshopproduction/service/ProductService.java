@@ -1,6 +1,5 @@
 package com.russozaripov.onlineshopproduction.service;
 
-import com.amazonaws.services.kms.model.NotFoundException;
 import com.russozaripov.onlineshopproduction.DTO.product_to_productDTO.FromProductToProductDTO;
 import com.russozaripov.onlineshopproduction.DTO.ProductDTO;
 import com.russozaripov.onlineshopproduction.entity.Brand;
@@ -14,11 +13,11 @@ import com.russozaripov.onlineshopproduction.repository.typeRepository.TypeRepos
 import com.russozaripov.onlineshopproduction.service.s3service.S3Service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 import java.util.List;
@@ -38,10 +37,9 @@ public class ProductService {
     private TypeRepository typeRepository;
     @Autowired
     private BrandRepository brandRepository;
+
     @Autowired
-    private WebClient.Builder WebClient;
-//    @Autowired
-//    private RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
 
 
@@ -82,12 +80,9 @@ public class ProductService {
         details.setDescription(productDTO.getDescription());
 
         Optional<Product> productOptional = productRepository.findById(productDTO.getProductId());
-        Product product;
+        Product product = null;
         if (productOptional.isPresent()){
             product = productOptional.get();
-        }
-        else {
-            throw new NotFoundException("Product with ID: %s not found.".formatted(productDTO.getProductId()));
         }
         product.setSkuCode(productDTO.getSkuCode());
         product.setType(type);
@@ -98,15 +93,17 @@ public class ProductService {
         log.info("Product with name: %s successfully update.".formatted(product.getSkuCode()));
 
 ////        Map<String, String> map = Map.of("skuCode", product.getSkuCode());
-        String resultFromInventory = WebClient.build()
-                        .post()
-                        .uri("http://localhost:8090/api/admin/inventory/")
-                        .bodyValue(product.getSkuCode())
-                        .retrieve()
-                        .bodyToMono(String.class)
-                        .block();
 
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
+        HttpEntity<String> httpEntity = new HttpEntity<>(product.getSkuCode(), httpHeaders);
+
+        ResponseEntity<String> response = restTemplate.exchange("http://inventory-service/api/inventory/",
+                HttpMethod.POST,
+                httpEntity,
+                String.class);
+        String resultFromInventory =  response.getBody();
 
         log.info(resultFromInventory);
         return resultFromInventory;
@@ -121,11 +118,9 @@ public class ProductService {
 
     public ProductDTO getSingleProduct(int id) {
         Optional<Product> optional = productRepository.findById(id);
-        Product product;
+        Product product = null;
         if (optional.isPresent()){
             product = optional.get();
-        } else {
-            throw new NotFoundException("Product with id: %s not found.".formatted(id));
         }
         return FromProductToProductDTO.fromProductToProductDTO(product);
     }

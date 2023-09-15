@@ -1,7 +1,6 @@
-package com.russozaripov.onlineshopproduction;
+package com.russozaripov.onlineshopproduction.controller;
 
 import com.russozaripov.onlineshopproduction.DTO.ProductDTO;
-import com.russozaripov.onlineshopproduction.entity.Product;
 import com.russozaripov.onlineshopproduction.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

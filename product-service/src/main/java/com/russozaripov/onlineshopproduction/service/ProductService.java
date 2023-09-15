@@ -7,17 +7,22 @@ import com.russozaripov.onlineshopproduction.entity.Brand;
 import com.russozaripov.onlineshopproduction.entity.Details;
 import com.russozaripov.onlineshopproduction.entity.Product;
 import com.russozaripov.onlineshopproduction.entity.Type;
+
 import com.russozaripov.onlineshopproduction.repository.brandRepository.BrandRepository;
 import com.russozaripov.onlineshopproduction.repository.productRepository.ProductRepository;
 import com.russozaripov.onlineshopproduction.repository.typeRepository.TypeRepository;
 import com.russozaripov.onlineshopproduction.service.s3service.S3Service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -33,6 +38,14 @@ public class ProductService {
     private TypeRepository typeRepository;
     @Autowired
     private BrandRepository brandRepository;
+    @Autowired
+    private WebClient.Builder WebClient;
+//    @Autowired
+//    private RestTemplate restTemplate;
+
+
+
+
     public String add_New_Product( MultipartFile file) throws IOException {
         String photoUrl = s3Service.add_New_File(file);
 
@@ -42,7 +55,7 @@ public class ProductService {
         product.setPhotoUrl(photoUrl);
         productRepository.save(product);
         log.info("Product photo save");
-        return "Success";
+        return String.valueOf(product.getId());
     }
 
     public String add_MetaData_Product(ProductDTO productDTO) {
@@ -83,7 +96,20 @@ public class ProductService {
 
         productRepository.save(product);
         log.info("Product with name: %s successfully update.".formatted(product.getSkuCode()));
-        return "Product info update.";
+
+////        Map<String, String> map = Map.of("skuCode", product.getSkuCode());
+        String resultFromInventory = WebClient.build()
+                        .post()
+                        .uri("http://localhost:8090/api/admin/inventory/")
+                        .bodyValue(product.getSkuCode())
+                        .retrieve()
+                        .bodyToMono(String.class)
+                        .block();
+
+
+
+        log.info(resultFromInventory);
+        return resultFromInventory;
     }
 
     public List<ProductDTO> getAllProducts() {
@@ -103,5 +129,6 @@ public class ProductService {
         }
         return FromProductToProductDTO.fromProductToProductDTO(product);
     }
+
 }
 

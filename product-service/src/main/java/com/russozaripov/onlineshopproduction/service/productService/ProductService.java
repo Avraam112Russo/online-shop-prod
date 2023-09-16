@@ -1,4 +1,4 @@
-package com.russozaripov.onlineshopproduction.service;
+package com.russozaripov.onlineshopproduction.service.productService;
 
 import com.russozaripov.onlineshopproduction.DTO.product_to_productDTO.FromProductToProductDTO;
 import com.russozaripov.onlineshopproduction.DTO.ProductDTO;

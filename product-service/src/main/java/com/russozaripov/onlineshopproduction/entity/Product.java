@@ -22,10 +22,12 @@ public class Product {
     private int id;
     @Column(name = "sku_code")
     private String skuCode;
+    @Column(name = "title")
+    private String title;
     @Column(name = "photo_url")
     private String photoUrl;
-//    @Column(name = "isInStock")
-//    private boolean isInStock;
+    @Column(name = "is_in_stock")
+    private boolean isInStock = false;
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.DETACH, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "type_id")
     private Type type;

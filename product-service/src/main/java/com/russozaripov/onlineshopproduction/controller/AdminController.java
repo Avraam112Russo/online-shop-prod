@@ -1,7 +1,7 @@
 package com.russozaripov.onlineshopproduction.controller;
 
 import com.russozaripov.onlineshopproduction.DTO.ProductDTO;
-import com.russozaripov.onlineshopproduction.service.ProductService;
+import com.russozaripov.onlineshopproduction.service.productService.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

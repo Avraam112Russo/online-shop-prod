@@ -9,6 +9,7 @@ public class FromProductToProductDTO {
     public static ProductDTO fromProductToProductDTO(Product product){
        return ProductDTO.builder()
                 .productId(product.getId())
+               .title(product.getTitle())
                 .isInStock(product.isInStock())
                 .skuCode(product.getSkuCode())
                 .productBrand(product.getBrand().getName())

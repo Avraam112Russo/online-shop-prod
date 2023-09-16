@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/product")
@@ -41,8 +42,8 @@ public class AdminController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<ProductDTO>> get_All_Products() throws Exception {
 //        List<ProductDTO> productDTOList =  productService.getAllProducts();
-        List<ProductDTO> productDTOList = productService.get_Products_Is_In_Stock();
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(productDTOList);
+        CompletableFuture<List<ProductDTO>> productDTOList = productService.get_Products_Is_In_Stock();
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(productDTOList.get());
     }
     @GetMapping("/getSingleProduct")
     public ResponseEntity<?> get_Single_Product(@RequestParam("id") int id){

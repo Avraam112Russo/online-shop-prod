@@ -7,6 +7,7 @@ import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import java.util.Properties;
 @Configuration
 @ComponentScan(basePackages = "com.russozaripov.onlineshopproduction")
 @EnableCaching
+@EnableAsync
 public class ProductConfig {
 
     @Bean

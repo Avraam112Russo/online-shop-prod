@@ -13,16 +13,17 @@ import com.russozaripov.onlineshopproduction.repository.typeRepository.TypeRepos
 import com.russozaripov.onlineshopproduction.service.s3service.S3Service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -108,20 +109,43 @@ public class ProductService {
         return resultFromInventory;
     }
 
-    public List<ProductDTO> getAllProducts() {
-        List<Product> products = productRepository.findAll();
-        return products.stream().map(product -> FromProductToProductDTO.fromProductToProductDTO(product)
-                ).collect(Collectors.toList());
+////    @Cacheable("allProducts")
+//    public List<ProductDTO> getAllProducts() {
+////        List<Product> products = productRepository.findAll();
+//        List<Product> products =
+//        return products.stream().map(product -> FromProductToProductDTO.fromProductToProductDTO(product)
+//                ).collect(Collectors.toList());
+//
+//    }
 
-    }
-
-    public ProductDTO getSingleProduct(int id) {
+    public ProductDTO get_Single_Product(int id) {
         Optional<Product> optional = productRepository.findById(id);
         Product product = null;
         if (optional.isPresent()){
             product = optional.get();
         }
         return FromProductToProductDTO.fromProductToProductDTO(product);
+    }
+    @PostConstruct
+    @Cacheable("allProductsIsInStock")
+    public List<ProductDTO> get_Products_Is_In_Stock() throws Exception {
+        Callable<List<ProductDTO>>listCallable = () -> {
+            List<Product> productsList = productRepository.findAll();
+            log.info("ThreadPoolProduct start work");
+            Iterator<Product> productIterator = productsList.iterator();
+            List<Product> products_Is_In_Stock = new ArrayList<>();
+            while (productIterator.hasNext()){
+                Product product = productIterator.next();
+                if (product.isInStock()){
+                    products_Is_In_Stock.add(product);
+                }
+            }
+            List<ProductDTO>productDTOList = products_Is_In_Stock.stream().map(product ->
+                    FromProductToProductDTO.fromProductToProductDTO(product)
+            ).collect(Collectors.toList());
+            return productDTOList;
+        };
+        return listCallable.call();
     }
 
 

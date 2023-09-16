@@ -39,13 +39,14 @@ public class AdminController {
 
     @GetMapping("/getAllProducts")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<List<ProductDTO>> get_All_Products(){
-        List<ProductDTO> productDTOList =  productService.getAllProducts();
+    public ResponseEntity<List<ProductDTO>> get_All_Products() throws Exception {
+//        List<ProductDTO> productDTOList =  productService.getAllProducts();
+        List<ProductDTO> productDTOList = productService.get_Products_Is_In_Stock();
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(productDTOList);
     }
     @GetMapping("/getSingleProduct")
     public ResponseEntity<?> get_Single_Product(@RequestParam("id") int id){
-        ProductDTO productDTO = productService.getSingleProduct(id);
+        ProductDTO productDTO = productService.get_Single_Product(id);
         if (productDTO != null){
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(productDTO);
         }

@@ -1,5 +1,8 @@
 package com.russozaripov.onlineshopproduction.config;
 
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -12,6 +15,7 @@ import java.util.Properties;
 
 @Configuration
 @ComponentScan(basePackages = "com.russozaripov.onlineshopproduction")
+@EnableCaching
 public class ProductConfig {
 
     @Bean
@@ -20,6 +24,9 @@ public class ProductConfig {
         return new RestTemplate();
     }
 
-
+    @Bean
+    public CacheManager cacheManager() {
+        return new ConcurrentMapCacheManager("allProductsIsInStock");
+    }
 
 }

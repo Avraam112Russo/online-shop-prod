@@ -2,7 +2,9 @@ package com.russozaripov.onlineshopproduction.controller;
 
 import com.russozaripov.onlineshopproduction.DTO.ProductDTO;
 import com.russozaripov.onlineshopproduction.service.ProductService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +16,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/product")
+@Slf4j
 public class AdminController {
 
+    @Value("${eureka.instance.instance-id}")
+    private String PRODUCT_SERVICE_INSTANCE_ID;
     @Autowired
     private ProductService productService;
     @PostMapping("/addProduct")
@@ -50,6 +55,6 @@ public class AdminController {
     }
     @GetMapping("/test")
     public String test(){
-        return "work";
+        return "Instance ID: %s".formatted(PRODUCT_SERVICE_INSTANCE_ID);
     }
 }

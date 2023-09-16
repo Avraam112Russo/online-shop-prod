@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -14,6 +15,7 @@ public class InventoryService {
 
     @Autowired
     private InventRepository inventRepository;
+
     public String create_New_Inventory_Model(String skuCode) {
         InventoryModel inventoryModel = InventoryModel.builder()
                 .id(UUID.randomUUID().toString())
@@ -21,4 +23,6 @@ public class InventoryService {
         inventRepository.save(inventoryModel);
         return "inventoryModel %s successfully insert.".formatted(skuCode);
     }
+
+
 }

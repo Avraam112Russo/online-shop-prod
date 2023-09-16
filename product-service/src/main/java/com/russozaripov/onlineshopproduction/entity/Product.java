@@ -24,6 +24,8 @@ public class Product {
     private String skuCode;
     @Column(name = "photo_url")
     private String photoUrl;
+//    @Column(name = "isInStock")
+//    private boolean isInStock;
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.DETACH, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "type_id")
     private Type type;
@@ -33,5 +35,6 @@ public class Product {
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.DETACH, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "details_id")
     private Details details;
+
 
 }

@@ -9,7 +9,7 @@
 //@ControllerAdvice
 //public class ExceptionHandlerService {
 //    @ExceptionHandler(NotFoundException.class)
-//    public ResponseEntity<String> handleNotFoundException(NotFoundException exception){
+//    public ResponseEntity<String> handleNotFoundException(ChangeSetPersister.NotFoundException exception){
 //        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
 //    }
 //

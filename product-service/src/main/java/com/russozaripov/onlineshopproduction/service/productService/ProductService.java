@@ -87,6 +87,7 @@ public class ProductService {
         if (productOptional.isPresent()){
             product = productOptional.get();
         }
+        product.setTitle(productDTO.getTitle());
         product.setSkuCode(productDTO.getSkuCode());
         product.setType(type);
         product.setBrand(brand);

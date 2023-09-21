@@ -43,7 +43,11 @@ public class ConfigSecurity {
         httpSecurity
                 .authorizeExchange((auth) -> {
                     auth.pathMatchers("/api/test/login").permitAll()
+                            .pathMatchers("/api/product/**").authenticated()
+                            .pathMatchers("/api/order/**").authenticated()
+                            .pathMatchers("/api/inventory/**").authenticated()
                             .pathMatchers("/api/test/secured").authenticated();
+
                 })
                 .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .csrf().disable()

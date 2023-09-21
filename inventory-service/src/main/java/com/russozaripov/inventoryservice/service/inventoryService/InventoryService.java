@@ -1,11 +1,13 @@
 package com.russozaripov.inventoryservice.service.inventoryService;
 
 import com.russozaripov.inventoryservice.DTO.Supply_product_DTO;
+import com.russozaripov.inventoryservice.event.NewOrderEvent;
 import com.russozaripov.inventoryservice.model.InventoryModel;
 import com.russozaripov.inventoryservice.repository.InventRepository;
 import com.russozaripov.inventoryservice.service.kafkaBroker.KafkaProducerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -34,6 +36,10 @@ public class InventoryService {
         inventRepository.save(inventoryModel);
         kafkaProducerService.sendMessageToKafka(supply_product_dto.getSkuCode());
         return "inventory-model: %s successfully update.".formatted(supply_product_dto.getSkuCode());
+    }
+    @KafkaListener(topics = "new-order", groupId = "order-group")
+    public void receivedMessageFromOrderService(NewOrderEvent newOrderEvent){
+        log.info("Received message -> new Order %s".formatted(newOrderEvent));
     }
 
 

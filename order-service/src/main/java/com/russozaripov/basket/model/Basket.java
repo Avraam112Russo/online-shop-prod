@@ -1,0 +1,35 @@
+package com.russozaripov.basket.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Collection;
+
+@Entity
+@Table(name = "basket")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class Basket {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private int id;
+    @Column(name = "username")
+    private String username;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "basket")
+    private Collection<ProductInBasket> productsInBaskets;
+
+    public void addProductToBasket(ProductInBasket productInBasket){
+        if (this.productsInBaskets == null){
+            productsInBaskets = new ArrayList<>();
+        }
+        this.productsInBaskets.add(productInBasket);
+        productInBasket.setBasket(this);
+    }
+}

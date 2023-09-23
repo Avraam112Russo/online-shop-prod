@@ -1,6 +1,7 @@
 package com.russozaripov.order.orderConfig;
 
 import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.common.config.TopicConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
@@ -10,6 +11,15 @@ public class ConfigOrder {
 
     @Bean
     public NewTopic newTopic(){
-        return TopicBuilder.name("new-order").build();
+        return TopicBuilder.name("newOrder")
+                .build();
     }
+
+//    @Bean
+//    public NewTopic topic() {
+//        return TopicBuilder.name("topic1")
+//                .partitions(10)
+//                .replicas(1)
+//                .build();
+//    }
 }

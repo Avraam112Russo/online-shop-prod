@@ -1,4 +1,4 @@
-package com.russozaripov.order.DTO;
+package com.russozaripov.inventoryservice.event.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

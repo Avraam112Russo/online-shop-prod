@@ -1,7 +1,8 @@
 package com.russozaripov.inventoryservice.service.inventoryService;
 
 import com.russozaripov.inventoryservice.DTO.Supply_product_DTO;
-import com.russozaripov.inventoryservice.event.NewOrderEvent;
+import com.russozaripov.inventoryservice.event.DTO.OrderItemDTO;
+import com.russozaripov.inventoryservice.event.DTO.RequestOrderDTO;
 import com.russozaripov.inventoryservice.model.InventoryModel;
 import com.russozaripov.inventoryservice.repository.InventRepository;
 import com.russozaripov.inventoryservice.service.kafkaBroker.KafkaProducerService;
@@ -34,12 +35,34 @@ public class InventoryService {
         InventoryModel inventoryModel = inventRepository.findInventoryModelBySkuCode(supply_product_dto.getSkuCode()).get();
         inventoryModel.setQuantity(supply_product_dto.getQuantity());
         inventRepository.save(inventoryModel);
-        kafkaProducerService.sendMessageToKafka(supply_product_dto.getSkuCode());
+        kafkaProducerService.sendMessageToKafka(supply_product_dto);
         return "inventory-model: %s successfully update.".formatted(supply_product_dto.getSkuCode());
     }
-    @KafkaListener(topics = "new-order", groupId = "order-group")
-    public void receivedMessageFromOrderService(NewOrderEvent newOrderEvent){
-        log.info("Received message -> new Order %s".formatted(newOrderEvent));
+    @KafkaListener(topics = "newOrder", groupId = "inventory-group")
+    public void receivedMessageFromOrderService(RequestOrderDTO requestOrderDTO){
+        log.info("Received message -> new Order %s".formatted(requestOrderDTO.getOrderID()));
+        for (OrderItemDTO itemDTO : requestOrderDTO.getOrderInfoDTO().getOrderItemDTOCollection()){
+            Optional<InventoryModel> inventoryModelBySkuCode = inventRepository.findInventoryModelBySkuCode(itemDTO.getSku_Code());
+            if (inventoryModelBySkuCode.isPresent()){
+                InventoryModel inventoryModel = inventoryModelBySkuCode.get();
+                int inventoryBalance = inventoryModel.getQuantity() - itemDTO.getQuantity();
+                inventoryModel.setQuantity(inventoryBalance);
+
+                if(inventoryBalance == 0){
+                    Supply_product_DTO product_dto = Supply_product_DTO.builder()
+                                    .quantity(inventoryBalance)
+                                            .skuCode(inventoryModel.getSkuCode())
+                                                    .build();
+                    kafkaProducerService.sendMessageToKafka(product_dto);
+                }
+                inventRepository.save(inventoryModel);
+                log.info("Inventory balance '%s' update".formatted(inventoryModel.getSkuCode()).formatted(requestOrderDTO));
+            }
+            else {
+                throw new IllegalArgumentException("Inventory model '%s' not found.".formatted(itemDTO.getSku_Code()));
+            }
+        }
+
     }
 
 

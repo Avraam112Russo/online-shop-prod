@@ -1,16 +1,16 @@
 package com.russozaripov.order.event;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Collection;
+import javax.persistence.Column;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class NewOrderEvent {
-    private int id;
+public class OrderItemEvent {
+    private String sku_Code;
+    private int quantity;
+    private int price;
 }

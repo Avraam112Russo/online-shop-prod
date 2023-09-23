@@ -9,6 +9,8 @@
         <module>discovery-server</module>
         <module>api-gateway</module>
         <module>order-service</module>
+        <module>email-notification-service</module>
+        <module>delivery-service</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>

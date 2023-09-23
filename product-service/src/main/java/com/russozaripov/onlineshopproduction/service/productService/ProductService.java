@@ -12,6 +12,7 @@ import com.russozaripov.onlineshopproduction.repository.productRepository.Produc
 import com.russozaripov.onlineshopproduction.repository.typeRepository.TypeRepository;
 import com.russozaripov.onlineshopproduction.service.updateProductInStock.AllProductsIsInStockService;
 import com.russozaripov.onlineshopproduction.service.s3service.S3Service;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
@@ -29,21 +30,15 @@ import java.util.concurrent.*;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ProductService {
 
-    @Autowired
-    private S3Service s3Service;
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private TypeRepository typeRepository;
-    @Autowired
-    private BrandRepository brandRepository;
-
-    @Autowired
-    private RestTemplate restTemplate;
-    @Autowired
-    private AllProductsIsInStockService allProductsIsInStockService;
+    private final S3Service s3Service;
+    private final ProductRepository productRepository;
+    private final TypeRepository typeRepository;
+    private final BrandRepository brandRepository;
+    private final RestTemplate restTemplate;
+    private final AllProductsIsInStockService allProductsIsInStockService;
 
 
 

@@ -21,5 +21,10 @@ public class Details {
     @Column(name = "price")
     private int price;
     @Column(name = "description")
-    private String Description;
+    private String description;
+
+    public Details(int price, String description) {
+        this.price = price;
+        this.description = description;
+    }
 }

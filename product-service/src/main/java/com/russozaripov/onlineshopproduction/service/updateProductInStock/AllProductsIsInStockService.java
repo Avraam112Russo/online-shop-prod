@@ -1,9 +1,11 @@
 package com.russozaripov.onlineshopproduction.service.updateProductInStock;
 
+import com.netflix.discovery.converters.Auto;
 import com.russozaripov.onlineshopproduction.DTO.ProductDTO;
 import com.russozaripov.onlineshopproduction.DTO.product_to_productDTO.FromProductToProductDTO;
 import com.russozaripov.onlineshopproduction.entity.Product;
 import com.russozaripov.onlineshopproduction.repository.productRepository.ProductRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,15 +14,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @Service
 @Slf4j
 public class AllProductsIsInStockService {
-
-    @Autowired
-    private ProductRepository productRepository;
+    public final ProductRepository productRepository;
+    public final FromProductToProductDTO fromProductToProductDTO;
 
     public Callable<List<ProductDTO>> GetAllProductsIsInStockService() {
         return () -> {
@@ -35,8 +36,9 @@ public class AllProductsIsInStockService {
             }
         }
         List<ProductDTO>productDTOList = products_Is_In_Stock.stream().map(product ->
-                FromProductToProductDTO.fromProductToProductDTO(product)
+                fromProductToProductDTO.productToProductDTO(product)
         ).collect(Collectors.toList());
+        log.info(productDTOList.toString());
         return productDTOList;
         };
     }

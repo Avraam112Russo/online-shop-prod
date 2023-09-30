@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Properties;
 
 @Configuration
-@ComponentScan(basePackages = "com.russozaripov.onlineshopproduction")
 @EnableCaching
 @EnableAsync
 public class ProductConfig {

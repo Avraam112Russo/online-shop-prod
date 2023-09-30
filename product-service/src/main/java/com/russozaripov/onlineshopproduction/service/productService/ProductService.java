@@ -7,6 +7,7 @@ import com.russozaripov.onlineshopproduction.entity.Details;
 import com.russozaripov.onlineshopproduction.entity.Product;
 import com.russozaripov.onlineshopproduction.entity.Type;
 
+import com.russozaripov.onlineshopproduction.exceptionHandler.ResourceNotFoundException;
 import com.russozaripov.onlineshopproduction.repository.brandRepository.BrandRepository;
 import com.russozaripov.onlineshopproduction.repository.productRepository.ProductRepository;
 import com.russozaripov.onlineshopproduction.repository.typeRepository.TypeRepository;
@@ -14,7 +15,6 @@ import com.russozaripov.onlineshopproduction.service.updateProductInStock.AllPro
 import com.russozaripov.onlineshopproduction.service.s3service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.*;
@@ -39,14 +39,12 @@ public class ProductService {
     private final BrandRepository brandRepository;
     private final RestTemplate restTemplate;
     private final AllProductsIsInStockService allProductsIsInStockService;
+    private final FromProductToProductDTO fromProductToProductDTO;
 
 
 
     public String add_New_Product( MultipartFile file) throws IOException {
         String photoUrl = s3Service.add_New_File(file);
-
-
-
         Product product = new Product();
         product.setPhotoUrl(photoUrl);
         productRepository.save(product);
@@ -122,23 +120,40 @@ public class ProductService {
         Product product = null;
         if (optional.isPresent()){
             product = optional.get();
+            log.info("Product title: " + product.getTitle());
         }
-        return FromProductToProductDTO.fromProductToProductDTO(product);
+        return fromProductToProductDTO.productToProductDTO(product);
     }
     @PostConstruct
     @Cacheable("allProductsIsInStock")
     @Async
     public CompletableFuture<List<ProductDTO>> get_Products_Is_In_Stock() throws Exception {
        Callable<List<ProductDTO>> listCallable = allProductsIsInStockService.GetAllProductsIsInStockService();
-        return CompletableFuture.completedFuture(listCallable.call());
+        List<ProductDTO> productDTOList = listCallable.call();
+        log.info(productDTOList.toString());
+        return CompletableFuture.completedFuture(productDTOList);
     }
 
     @Async
     @CachePut("allProductsIsInStock")
     public CompletableFuture<List<ProductDTO>> update_Cache_With_AllProducts() throws Exception {
         Callable<List<ProductDTO>> listCallable = allProductsIsInStockService.GetAllProductsIsInStockService();
-        return CompletableFuture.completedFuture(listCallable.call());
+        List<ProductDTO> productDTOList = listCallable.call();
+        log.info(productDTOList.toString());
+        return CompletableFuture.completedFuture(productDTOList);
     }
+
+    public String deleteProductById(int id){
+        Optional<Product> productOptional = productRepository.findById(id);
+        if (productOptional.isPresent()){
+            productRepository.deleteById(id);
+            log.info("Product ID: %s successfully delete.".formatted(productOptional.get().getTitle()));
+            return "Success.";
+        }
+        else {
+            throw new ResourceNotFoundException("Product with ID: %s not found.".formatted(id));
+            }
+        }
 
 }
 

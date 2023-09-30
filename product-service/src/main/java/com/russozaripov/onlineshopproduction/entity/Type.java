@@ -19,4 +19,8 @@ public class Type {
     private int id;
     @Column(name = "name")
     private String name;
+
+    public Type(String name) {
+        this.name = name;
+    }
 }

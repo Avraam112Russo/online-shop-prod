@@ -20,7 +20,7 @@ import java.util.UUID;
 @Slf4j
 public class S3Service {
 
-    private static final String BUCKET_NAME = "bucket-russiano";
+    private static final String BUCKET_NAME = "product-service-bucket-rusiano";
     private final AmazonS3Client amazonS3Client;
 
     public String add_New_File(MultipartFile file) throws IOException {

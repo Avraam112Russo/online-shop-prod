@@ -7,26 +7,38 @@ import com.russozaripov.onlineshopproduction.entity.Details;
 import com.russozaripov.onlineshopproduction.entity.Product;
 import com.russozaripov.onlineshopproduction.entity.Type;
 
-import com.russozaripov.onlineshopproduction.exceptionHandler.ResourceNotFoundException;
+import com.russozaripov.onlineshopproduction.exceptionHandler.noSuchProduct.NoSuchBrand.NoSuchBrandException;
+import com.russozaripov.onlineshopproduction.exceptionHandler.noSuchProduct.NoSuchProductException;
+import com.russozaripov.onlineshopproduction.exceptionHandler.noSuchProduct.noSuchType.NoSuchTypeException;
 import com.russozaripov.onlineshopproduction.repository.brandRepository.BrandRepository;
 import com.russozaripov.onlineshopproduction.repository.productRepository.ProductRepository;
 import com.russozaripov.onlineshopproduction.repository.typeRepository.TypeRepository;
+import com.russozaripov.onlineshopproduction.service.productService.filterService.ServiceFilter;
 import com.russozaripov.onlineshopproduction.service.updateProductInStock.AllProductsIsInStockService;
 import com.russozaripov.onlineshopproduction.service.s3service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.*;
+import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -40,7 +52,8 @@ public class ProductService {
     private final RestTemplate restTemplate;
     private final AllProductsIsInStockService allProductsIsInStockService;
     private final FromProductToProductDTO fromProductToProductDTO;
-
+    private final ServiceFilter serviceFilter;
+    private final EntityManager entityManager;
 
 
     public String add_New_Product( MultipartFile file) throws IOException {
@@ -89,7 +102,6 @@ public class ProductService {
         productRepository.save(product);
         log.info("Product with name: %s successfully update.".formatted(product.getSkuCode()));
 
-////        Map<String, String> map = Map.of("skuCode", product.getSkuCode());
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -106,23 +118,13 @@ public class ProductService {
         return resultFromInventory;
     }
 
-////    @Cacheable("allProducts")
-//    public List<ProductDTO> getAllProducts() {
-////        List<Product> products = productRepository.findAll();
-//        List<Product> products =
-//        return products.stream().map(product -> FromProductToProductDTO.fromProductToProductDTO(product)
-//                ).collect(Collectors.toList());
-//
-//    }
-
     public ProductDTO get_Single_Product(int id) {
-        Optional<Product> optional = productRepository.findById(id);
-        Product product = null;
-        if (optional.isPresent()){
-            product = optional.get();
-            log.info("Product title: " + product.getTitle());
+        Optional<Product> productOptional = productRepository.findById(id);
+        if (productOptional.isPresent()){
+            return fromProductToProductDTO.productToProductDTO(productOptional.get());
+        } else {
+            throw new NoSuchProductException("Product with id: %s not found.".formatted(id));
         }
-        return fromProductToProductDTO.productToProductDTO(product);
     }
     @PostConstruct
     @Cacheable("allProductsIsInStock")
@@ -147,13 +149,19 @@ public class ProductService {
         Optional<Product> productOptional = productRepository.findById(id);
         if (productOptional.isPresent()){
             productRepository.deleteById(id);
-            log.info("Product ID: %s successfully delete.".formatted(productOptional.get().getTitle()));
             return "Success.";
+        } else {
+            throw new NoSuchProductException("Product with id: %s not found.".formatted(id));
         }
-        else {
-            throw new ResourceNotFoundException("Product with ID: %s not found.".formatted(id));
-            }
         }
+
+
+
+    public List<ProductDTO> findAllProductsWithSpecification( String type, String brand, Integer minPrice, Integer maxPrice){
+        Specification<Product> specification = serviceFilter.filterProductsWithSpecification(type, brand, minPrice, maxPrice);
+        List<Product> productList = productRepository.findAll(specification);
+        return productList.stream().map(product -> fromProductToProductDTO.productToProductDTO(product)).collect(Collectors.toList());
+    }
 
 }
 

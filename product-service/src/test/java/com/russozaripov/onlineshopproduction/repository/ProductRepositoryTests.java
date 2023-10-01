@@ -17,7 +17,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.util.List;
 import java.util.Optional;
 
-//@TestPropertySource(locations = "classpath:application-test.properties")
+@TestPropertySource(locations = "classpath:application-test.properties")
 @DataJpaTest
 @Slf4j
 public class ProductRepositoryTests {

@@ -1,7 +1,10 @@
 package com.russozaripov.onlineshopproduction.controller;
 
+import com.netflix.discovery.converters.Auto;
 import com.russozaripov.onlineshopproduction.DTO.ProductDTO;
-import com.russozaripov.onlineshopproduction.exceptionHandler.ResourceNotFoundException;
+import com.russozaripov.onlineshopproduction.DTO.product_to_productDTO.FromProductToProductDTO;
+import com.russozaripov.onlineshopproduction.entity.Product;
+import com.russozaripov.onlineshopproduction.exceptionHandler.noSuchProduct.NoSuchProductException;
 import com.russozaripov.onlineshopproduction.service.productService.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.ws.rs.Path;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -43,7 +46,6 @@ public class AdminController {
     @GetMapping("/getAllProducts")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<ProductDTO>> get_All_Products() throws Exception {
-//        List<ProductDTO> productDTOList =  productService.getAllProducts();
         CompletableFuture<List<ProductDTO>> productDTOList = productService.get_Products_Is_In_Stock();
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(productDTOList.get());
     }
@@ -51,19 +53,25 @@ public class AdminController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> get_Single_Product(@PathVariable("productID") int id){
         ProductDTO productDTO = productService.get_Single_Product(id);
-        if (productDTO != null){
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(productDTO);
-        }
-        else {
-           return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(productDTO);
+
+
+    }
+    @GetMapping("/getProducts/sortWithSpec")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> get_Sorted_Products_Wirh_Specification_JPA(
+            @RequestParam(value = "brand", required = false) String brand,
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "maxPrice", required = false) Integer maxPrice,
+            @RequestParam(value = "minPrice", required = false) Integer minPrice
+    ){
+        List<ProductDTO> productDTOList = productService.findAllProductsWithSpecification(type, brand, minPrice, maxPrice);
+        return ResponseEntity.ok(productDTOList);
     }
     @DeleteMapping("/deleteProduct/{productID}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> deleteProductById(@PathVariable("productID")int id){
-        if (productService.deleteProductById(id).equals( "success")){
-        return ResponseEntity.ok("Product successfully delete.");
-        }
-        return ResponseEntity.notFound().build();
+        String successDelete = productService.deleteProductById(id);
+        return ResponseEntity.ok(successDelete);
     }
 }

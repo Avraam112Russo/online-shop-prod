@@ -6,17 +6,20 @@ import com.russozaripov.onlineshopproduction.entity.Brand;
 import com.russozaripov.onlineshopproduction.entity.Details;
 import com.russozaripov.onlineshopproduction.entity.Product;
 import com.russozaripov.onlineshopproduction.entity.Type;
+import com.russozaripov.onlineshopproduction.exceptionHandler.noSuchProduct.NoSuchProductException;
 import com.russozaripov.onlineshopproduction.service.productService.ProductService;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -138,8 +141,8 @@ public class ProductControllerTests {
                 .price(12345)
                 .localTime(LocalTime.now())
                 .build();
-        BDDMockito.given(productService.get_Single_Product(productDTO_1.getProductId())).willReturn(productDTO_1);
-        int productID = productDTO_1.getProductId();
+        int productID = 1;
+        BDDMockito.given(productService.get_Single_Product(productID)).willReturn(productDTO_1);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/api/product/getSingleProduct/{productID}", productID)
                 .contentType(MediaType.APPLICATION_JSON)
         );
@@ -153,8 +156,11 @@ public class ProductControllerTests {
     @Test
     public void givenProductID_whenGetSingleProduct_thenReturnNotFoundException() throws Exception {
         int productID = 1;
-        BDDMockito.given(productService.get_Single_Product(productID)).willReturn(null);
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/api/product/getSingleProduct/{productID}", productID));
+        BDDMockito.given(productService.get_Single_Product(productID))
+                .willThrow(new NoSuchProductException("Product with id: %s not found.".formatted(productID)));
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/api/product/getSingleProduct/{productID}", productID)
+                .contentType(MediaType.APPLICATION_JSON)
+        );
         result.andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
 
@@ -164,12 +170,27 @@ public class ProductControllerTests {
     @Test
     public void givenProductID_whenDeleteProductId_thenReturnResponseEntityWithString() throws Exception {
         int productID = 1;
-        BDDMockito.given(productService.deleteProductById(productID)).willReturn("success");
+        String resultFromService = "Success.";
+        BDDMockito.given(productService.deleteProductById(productID)).willReturn(resultFromService);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.delete("/api/product/deleteProduct/{productID}", productID)
                 .contentType(MediaType.APPLICATION_JSON)
         );
         result.andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", CoreMatchers.is("Product successfully delete.")));
+                .andExpect(MockMvcResultMatchers.jsonPath("$", CoreMatchers.is(resultFromService)));
+    }
+    @DisplayName("Junit test for delete product operation. (Negative scenario)")
+    @Test
+    public void givenProductID_whenDeleteProduct_thenReturnNotFoundException() throws Exception {
+        int productID = 1;
+        BDDMockito.given(productService.deleteProductById(productID))
+                .willThrow(new NoSuchProductException("Product with id: %s not found.".formatted(productID)));
+
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.delete("/api/product/deleteProduct/{productID}", productID)
+                .contentType(MediaType.APPLICATION_JSON)
+        );
+        result.andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+
     }
 }

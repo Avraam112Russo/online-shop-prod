@@ -157,10 +157,12 @@ public class ProductServiceTests {
                 });
         ProductDTO productDTO = productService.get_Single_Product(product.getId());
 
-        Mockito.verify(fromProductToProductDTO, Mockito.times(1)).productToProductDTO(ArgumentMatchers.any(Product.class));
         Assertions.assertThat(productDTO).isNotNull();
-        Assertions.assertThat(productDTO.getSkuCode()).isEqualTo(product.getSkuCode());
         Assertions.assertThat(productDTO.getTitle()).isEqualTo(product.getTitle());
+        Assertions.assertThat(productDTO.getSkuCode()).isEqualTo(product.getSkuCode());
+
+        Mockito.verify(fromProductToProductDTO, Mockito.times(1)).productToProductDTO(ArgumentMatchers.any(Product.class));
+
     }
     @DisplayName("Junit test for get all products is in stock operation.")
     @Test

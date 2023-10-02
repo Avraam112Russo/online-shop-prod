@@ -10,6 +10,7 @@ import com.russozaripov.onlineshopproduction.repository.brandRepository.BrandRep
 import com.russozaripov.onlineshopproduction.repository.productRepository.ProductRepository;
 import com.russozaripov.onlineshopproduction.repository.typeRepository.TypeRepository;
 import com.russozaripov.onlineshopproduction.service.productService.ProductService;
+import com.russozaripov.onlineshopproduction.service.productService.filterService.ServiceFilter;
 import com.russozaripov.onlineshopproduction.service.s3service.S3Service;
 import com.russozaripov.onlineshopproduction.service.updateProductInStock.AllProductsIsInStockService;
 import org.assertj.core.api.Assertions;
@@ -18,13 +19,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
+import org.mockito.internal.util.MockUtil;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.client.RestTemplate;
 
+import javax.persistence.criteria.Predicate;
 import java.io.IOException;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -50,6 +54,8 @@ public class ProductServiceTests {
     private FromProductToProductDTO fromProductToProductDTO;
     @Mock
     private AllProductsIsInStockService allProductsIsInStockService;
+    @Mock
+    private ServiceFilter serviceFilter;
     @InjectMocks
     private ProductService productService;
 
@@ -221,6 +227,48 @@ public class ProductServiceTests {
        Mockito.verify(productRepository, Mockito.times(1)).deleteById(ArgumentMatchers.any());
        Assertions.assertThat(successfullyDelete).isNotNull();
        Assertions.assertThat(successfullyDelete).isEqualTo("Success.");
+
+    }
+    @DisplayName("Junit test for find products with filters operation.")
+    @Test
+    public void givenListFiltersProducts_whenFindAllProductsWithFilters_thenReturnListProductDto(){
+        Specification<Product> specification = (((root, query, criteriaBuilder) -> criteriaBuilder.and(new Predicate[0])));
+        Product product_2 = Product.builder()
+                .id(2)
+                .skuCode("AppleIphone12Pro")
+                .title("Apple Iphone 12 Pro")
+                .photoUrl("www.s3service.com/any-photo-url")
+                .isInStock(false)
+                .type(new Type("MobilePhone"))
+                .brand(new Brand("Apple"))
+                .details(new Details(165990, "any description"))
+                .build();
+        List<Product> productList = new ArrayList<>(List.of(product, product_2));
+        BDDMockito.given(serviceFilter.filterProductsWithSpecification(
+                ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt(), ArgumentMatchers.anyBoolean()
+                )).willReturn(specification);
+
+        BDDMockito.given(productRepository.findAll(specification)).willReturn(productList);
+        BDDMockito.given(fromProductToProductDTO.productToProductDTO(ArgumentMatchers.any(Product.class))).willAnswer((invocation) -> {
+            Product product = invocation.getArgument(0);
+            return ProductDTO.builder()
+                    .skuCode(product.getSkuCode())
+                    .title(product.getTitle())
+                    .isInStock(product.isInStock())
+                    .productType(product.getType().getName())
+                    .productBrand(product.getBrand().getName())
+                    .productId(product.getId())
+                    .description(product.getDetails().getDescription())
+                    .price(product.getDetails().getPrice())
+                    .localTime(LocalTime.now())
+                    .build();
+        });
+
+        List<ProductDTO> productDTOList = productService.findAllProductsWithFilter(
+                "anytype", "anybrand", 0, 100, true, false, false
+        );
+        Assertions.assertThat(productDTOList).isNotNull();
+        Assertions.assertThat(productDTOList.size()).isEqualTo(2);
 
     }
 }

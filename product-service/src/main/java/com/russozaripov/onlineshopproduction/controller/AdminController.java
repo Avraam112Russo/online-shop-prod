@@ -1,10 +1,6 @@
 package com.russozaripov.onlineshopproduction.controller;
 
-import com.netflix.discovery.converters.Auto;
 import com.russozaripov.onlineshopproduction.DTO.ProductDTO;
-import com.russozaripov.onlineshopproduction.DTO.product_to_productDTO.FromProductToProductDTO;
-import com.russozaripov.onlineshopproduction.entity.Product;
-import com.russozaripov.onlineshopproduction.exceptionHandler.noSuchProduct.NoSuchProductException;
 import com.russozaripov.onlineshopproduction.service.productService.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -63,9 +58,14 @@ public class AdminController {
             @RequestParam(value = "brand", required = false) String brand,
             @RequestParam(value = "type", required = false) String type,
             @RequestParam(value = "maxPrice", required = false) Integer maxPrice,
-            @RequestParam(value = "minPrice", required = false) Integer minPrice
+            @RequestParam(value = "minPrice", required = false) Integer minPrice,
+            @RequestParam(value = "isInStock", required = false, defaultValue = "true") boolean isInStock,
+            @RequestParam(value = "sortedByAscPrice", required = false) boolean ascPrice,
+            @RequestParam(value = "sortedByDescPrice", required = false) boolean descPrice
     ){
-        List<ProductDTO> productDTOList = productService.findAllProductsWithSpecification(type, brand, minPrice, maxPrice);
+        List<ProductDTO> productDTOList = productService.findAllProductsWithFilter(
+                type, brand, minPrice, maxPrice, isInStock, ascPrice, descPrice
+        );
         return ResponseEntity.ok(productDTOList);
     }
     @DeleteMapping("/deleteProduct/{productID}")

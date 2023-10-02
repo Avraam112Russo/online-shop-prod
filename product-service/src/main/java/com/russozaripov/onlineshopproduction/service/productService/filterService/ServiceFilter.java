@@ -31,9 +31,14 @@ public class ServiceFilter {
     public Specification<Product> filterProductsWithSpecification(String type,
                                                                   String brand,
                                                                   Integer minPrice,
-                                                                  Integer maxPrice){
+                                                                  Integer maxPrice,
+                                                                  boolean isInStock
+    ){
         return ((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
+            if (isInStock){
+                predicates.add(criteriaBuilder.equal(root.get("isInStock"), true));
+            }
             if (type != null){
                 Type savedType = typeRepository.findTypeByName(type).orElseThrow(() -> new NoSuchTypeException("Type with name: %s not found.".formatted(type)));
                 predicates.add(criteriaBuilder.equal(root.get("type"), savedType));
@@ -50,6 +55,7 @@ public class ServiceFilter {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("details").get("price"), maxPrice));
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+
         });
     }
 }

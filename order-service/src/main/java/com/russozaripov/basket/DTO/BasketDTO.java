@@ -10,6 +10,5 @@ import java.util.Collection;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BasketDTO {
-    private String username;
     private Collection<BasketItemDTO> basketItemDTO;
 }

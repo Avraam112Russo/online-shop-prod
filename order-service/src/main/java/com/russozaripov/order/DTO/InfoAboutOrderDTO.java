@@ -6,11 +6,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class RequestOrderDTO {
-    private int orderID;
-    private OrderInfoDTO orderInfoDTO;
-    private String username;
+public class InfoAboutOrderDTO {
+    private String email;
+    private String deliveryAddress;
+    private String phoneNumber;
 }

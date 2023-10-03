@@ -20,15 +20,15 @@ public class ServiceBasket {
 
     private final BasketRepository basketRepository;
 
-    public ResponseEntity<RequestResponseDTO<String>> createBasket(BasketDTO basketDTO){
+    public ResponseEntity<RequestResponseDTO<String>> createBasket(BasketDTO basketDTO, String username){
         Basket basket;
-        Optional<Basket> basketOptional = basketRepository.findBasketByUsername(basketDTO.getUsername());
+        Optional<Basket> basketOptional = basketRepository.findBasketByUsername(username);
         if (basketOptional.isPresent()){
             basket = basketOptional.get();
         }
         else {
          basket = Basket.builder()
-                .username(basketDTO.getUsername())
+                .username(username)
                 .build();
         }
         ProductInBasket productInBasket;
@@ -41,11 +41,11 @@ public class ServiceBasket {
               basket.addProductToBasket(productInBasket);
          }
              basketRepository.save(basket);
-            log.info("Basket %s save".formatted(basket.getUsername()));
+            log.info("Basket %s save".formatted(username));
             return ResponseEntity.ok(
                     new RequestResponseDTO<>(
                             "Success",
-                            "Basket %s save".formatted(basket.getUsername())
+                            "Basket %s save".formatted(username)
                     )
             );
 

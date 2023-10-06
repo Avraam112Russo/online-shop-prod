@@ -27,14 +27,16 @@ public class InventoryService {
         InventoryModel inventoryModel = InventoryModel.builder()
                 .id(UUID.randomUUID().toString())
                 .skuCode(skuCode).build();
-        inventRepository.save(inventoryModel);
-        return "inventoryModel %s successfully insert.".formatted(skuCode);
+        InventoryModel savedInventory = inventRepository.save(inventoryModel);
+        log.info(inventoryModel.toString());
+        return "inventoryModel %s successfully insert.".formatted(savedInventory.getSkuCode());
     }
 
     public String supply_Product(Supply_product_DTO supply_product_dto){
         InventoryModel inventoryModel = inventRepository.findInventoryModelBySkuCode(supply_product_dto.getSkuCode()).get();
         inventoryModel.setQuantity(supply_product_dto.getQuantity());
         inventRepository.save(inventoryModel);
+        log.info(inventoryModel.toString());
         kafkaProducerService.sendMessageToKafka(supply_product_dto);
         return "inventory-model: %s successfully update.".formatted(supply_product_dto.getSkuCode());
     }
@@ -45,6 +47,7 @@ public class InventoryService {
             Optional<InventoryModel> inventoryModelBySkuCode = inventRepository.findInventoryModelBySkuCode(itemDTO.getSku_Code());
             if (inventoryModelBySkuCode.isPresent()){
                 InventoryModel inventoryModel = inventoryModelBySkuCode.get();
+                log.info("Quantity before update: %s".formatted(inventoryModel.getQuantity()));
                 int inventoryBalance = inventoryModel.getQuantity() - itemDTO.getQuantity();
                 inventoryModel.setQuantity(inventoryBalance);
 
@@ -56,7 +59,7 @@ public class InventoryService {
                     kafkaProducerService.sendMessageToKafka(product_dto);
                 }
                 inventRepository.save(inventoryModel);
-                log.info("Inventory balance '%s' update".formatted(inventoryModel.getSkuCode()).formatted(requestOrderDTO));
+                log.info("Inventory balance '%s' update. CURRENT QUANTITY -> %d".formatted(inventoryModel.getSkuCode(), inventoryBalance));
             }
             else {
                 throw new IllegalArgumentException("Inventory model '%s' not found.".formatted(itemDTO.getSku_Code()));

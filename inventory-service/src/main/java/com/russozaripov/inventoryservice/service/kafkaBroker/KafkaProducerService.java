@@ -13,11 +13,7 @@ import org.springframework.stereotype.Service;
 public class KafkaProducerService {
     private final String TOPIC_1 = "inventory-topic";
     private final KafkaTemplate<String, Supply_product_DTO> kafkaTemplate;
-
-
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaProducerService.class); //логирование сообщений
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaProducerService.class);
     public void sendMessageToKafka(Supply_product_DTO supply_product_dto){
         LOGGER.info("sent message: %s".formatted(supply_product_dto));
         kafkaTemplate.send(TOPIC_1, supply_product_dto);
